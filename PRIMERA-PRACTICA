@@ -1,0 +1,71 @@
+install.packages('insuranceData')
+install.packages('skimr')
+install.packages('ggplot2')
+install.packages("visdat")
+require(insuranceData)
+require(dplyr)
+require(visdat)
+require(skimr)
+require(ggplot2)
+#activar el data frame de dataCar
+data(dataCar)
+#estructura del data frame
+str(dataCar)
+#resumen estadistico de la base de datos
+summary(dataCar)
+skim(dataCar)
+#Primeros y ultimos datos respectivamente
+head(dataCar)
+tail(dataCar)
+#dimensión de la base de datos
+dim(dataCar)
+#Conocer la definición de las variables (opción a str)
+glimpse(dataCar)
+#Conocer el nombre de las variables
+names(dataCar)
+colnames(dataCar)
+#datos faltantes
+any(is.na(dataCar))
+vis_dat(dataCar)
+vis_miss(dataCar)
+#Pocentaje de polizas que tienen al menos una reclamación
+sum(dataCar$numclaims>=1)/nrow(dataCar)
+#Top 5
+top5<- dataCar %>%
+  group_by(veh_body)%>%
+  summarise(n=sum(numclaims))%>%
+  top_n(5)%>%
+  arrange(desc(n))
+top5
+#Top 10 
+top10<- dataCar %>%
+  group_by(veh_body)%>%
+  summarise(n=sum(claimcst0))%>%
+  top_n(10)%>%
+  arrange(desc(n))
+top10
+
+
+ggplot(top10, aes(x=reorder(veh_body, -n), y=n))+
+  geom_bar(stat="identity", fill="red", color="black")+
+  labs(title="Número de Reclamaciones por Tipo de Vehiculo",
+       x= "Tipo de Vehiculo",
+       y="Total de Reclamaciones")+
+  theme_light()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+#Analisis contemplando el género
+genero<- dataCar %>%
+  group_by(gender, veh_body)%>%
+  summarise(n=sum(numclaims), m=sum(claimcst0), )%>%
+  arrange(desc(n))
+genero
+
+ggplot(genero, aes(x=reorder(veh_body, -n), y=n, fill=gender))+
+  geom_bar(stat="identity", position = "dodge")+
+  labs(title="Número de Reclamaciones por Tipo de Vehiculo y Género",
+       x= "Tipo de Vehiculo",
+       y="Total de Reclamaciones")+
+  theme_light()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  scale_fill_manual(values = c("red","black"))
